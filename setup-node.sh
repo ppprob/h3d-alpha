@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR_GIT=/home/bob/tmp/test-init/dirgit
+DIR_GIT=/var/lib/git
 DIR_REGISTRY=/var/lib/registry
 
 source package-system-index
@@ -39,4 +39,6 @@ template_local () {
     sed -i "s#k8sVersion:#k8sVersion: ${SYSBIN[kubernetes]}#" structure/cluster/local/values.yaml
 }
 
+init_git
+pull_binaries
 template_local

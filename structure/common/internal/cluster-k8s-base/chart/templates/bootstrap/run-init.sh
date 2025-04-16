@@ -5,7 +5,7 @@ SOURCE="<pathtogit>/bin/package-system"
 install_pkgs () {
     echo "+ Installing system biniaries"
 
-    rsync -rlpv $SOURCE/$pkg/ /
+    rsync -rlpv $SOURCE/ /
 
     sysctl --system
     systemctl daemon-reload
