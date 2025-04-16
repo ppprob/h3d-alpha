@@ -1,0 +1,15 @@
+fluxVariables:
+  repositoryUrl: 
+  repositoryBranch: 
+  repositorySshIdentityB64: 
+  repositorySshKnownHosts: 
+
+#additionalFluxVariables: |-
+#  key: value
+
+kubeadmConfig: 
+  k8sVersion:
+  initHostIP:
+  apiFQDN:
+  podSubnet:
+  serviceSubnet:

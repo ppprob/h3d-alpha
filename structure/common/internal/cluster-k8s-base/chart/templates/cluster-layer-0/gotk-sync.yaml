@@ -1,0 +1,44 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: cluster
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: ${repository__branch}
+  secretRef:
+    name: git-cred
+  url: ${repository__url}
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-layer-0
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./cluster-layer-0
+  prune: false
+  commonMetadata:
+    labels:
+      cluster-layer: "0"
+  sourceRef:
+    kind: GitRepository
+    name: cluster
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: flux-variables
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-cred
+  namespace: flux-system
+type: Opaque
+data:
+  identity: ${repository__sshIdentity_b64}
+stringData:
+  known_hosts: ${repository__sshKnownHosts}

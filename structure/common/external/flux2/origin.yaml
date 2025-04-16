@@ -1,0 +1,7 @@
+git: 
+  remote: https://github.com/fluxcd/flux2
+  outOfRemoteComponents:
+    - https://github.com/fluxcd/source-controller
+    - https://github.com/fluxcd/helm-controller
+    - https://github.com/fluxcd/notification-controller
+    - https://github.com/fluxcd/kustomize-controller

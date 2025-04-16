@@ -1,0 +1,10 @@
+#!/bin/bash
+## DEP: helm, helm-git
+
+VERSION=$1
+
+helm repo add tektoncd "git+https://github.com/tektoncd/operator@charts?ref=$VERSION"
+helm pull tektoncd/tekton-operator --untar --untardir import
+rsync -a --checksum --delete import/tekton-operator/ chart/
+helm repo remove tektoncd
+rm -rf import

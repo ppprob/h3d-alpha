@@ -1,0 +1,24 @@
+#!/bin/bash
+
+VERSION=$1
+
+DIR=root/usr/bin
+mkdir -p $DIR
+
+for bin in kubeadm kubelet kubectl
+do 
+    URL=https://github.com/kubernetes-sigs/cri-tools/releases/download/${VERSION}/crictl-${VERSION}-linux-amd64.tar.gz
+    URL=https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/${bin}
+
+    curl -Ls $URL -o ${DIR}/${bin}
+    chmod +x ${DIR}/${bin}
+done
+
+# Additional files
+mkdir -p root/usr/lib/systemd/system/
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/master/cmd/krel/templates/latest/kubelet/kubelet.service" -o root/usr/lib/systemd/system/kubelet.service
+mkdir -p root/usr/lib/systemd/system/kubelet.service.d
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/master/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf" -o root/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+mkdir -p root/etc/sysctl.d
+echo "net.ipv4.ip_forward = 1" > root/etc/sysctl.d/89-kubernetes.conf

@@ -1,0 +1,5 @@
+git: 
+  remote: https://github.com/tektoncd/operator.git
+  outOfRemoteComponents:
+    - https://github.com/tektoncd/dashboard.git
+    - https://github.com/tektoncd/pipeline.git

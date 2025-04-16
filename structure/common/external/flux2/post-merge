@@ -1,0 +1,8 @@
+#!/bin/bash
+## DEP: docker
+
+VERSION=$1
+
+mkdir -p manifests
+
+docker run --rm fluxcd/flux-cli:$VERSION install --export > manifests/gotk-components.yaml

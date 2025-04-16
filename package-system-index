@@ -1,0 +1,6 @@
+declare -A SYSBIN
+SYSBIN["runc"]="v1.2.6"
+SYSBIN["containerd"]="2.0.4"
+SYSBIN["cni-plugins"]="v1.6.2"
+SYSBIN["cri-tools"]="v1.32.0"
+SYSBIN["kubernetes"]="v1.32.3"

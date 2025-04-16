@@ -1,0 +1,8 @@
+#!/bin/bash
+
+VERSION=$1
+URL=https://get.helm.sh/helm-${VERSION}-linux-amd64.tar.gz
+DIR=root/usr/bin
+
+mkdir -p $DIR
+curl -Ls $URL | tar -C $DIR -xz linux-amd64/helm --strip-components=1

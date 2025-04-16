@@ -1,0 +1,15 @@
+#!/bin/bash
+
+VERSION=$1
+URL=https://github.com/containerd/containerd/releases/download/v${VERSION}/containerd-${VERSION}-linux-amd64.tar.gz
+DIR=root/usr/local
+
+mkdir -p $DIR
+curl -Ls $URL | tar -C $DIR -xz
+
+# Additional files
+mkdir -p root/usr/local/lib/systemd/system/
+curl -Ls https://raw.githubusercontent.com/containerd/containerd/main/containerd.service -o root/usr/local/lib/systemd/system/containerd.service
+
+mkdir -p root/etc/containerd
+root/usr/local/bin/containerd config default > root/etc/containerd/config.toml

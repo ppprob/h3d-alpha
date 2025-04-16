@@ -1,0 +1,18 @@
+#!/bin/bash
+
+VERSION=$1
+URL=https://github.com/kubernetes-sigs/cri-tools/releases/download/${VERSION}/crictl-${VERSION}-linux-amd64.tar.gz
+DIR=root/usr/bin
+
+mkdir -p $DIR
+curl -Ls $URL | tar -C $DIR -xz
+
+# Additional files
+mkdir -p root/etc
+cat << EOF > root/etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 3
+debug: false
+pull-image-on-create: false
+EOF

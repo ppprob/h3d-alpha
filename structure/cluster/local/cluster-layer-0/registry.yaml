@@ -1,0 +1,77 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: registry-local
+  namespace: flux-system
+spec:
+  type: "oci"
+  interval: 5m0s
+  url: oci://registry.flux-system
+  insecure: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: registry
+  name: registry
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: registry
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - image: registry:2.8.3
+        name: registry
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100M
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/lib/registry
+          name: data
+      securityContext:
+        fsGroup: 3000
+        runAsGroup: 3000
+        runAsUser: 3000
+      volumes:
+      - hostPath:
+          path: /var/lib/registry
+          type: DirectoryOrCreate
+        name: data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/name: registry
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app.kubernetes.io/name: registry
+  type: ClusterIP
+

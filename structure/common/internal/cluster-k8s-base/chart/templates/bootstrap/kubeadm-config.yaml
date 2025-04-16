@@ -1,0 +1,28 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ .Values.kubeadmConfig.initHostIP }}
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+  imagePullPolicy: IfNotPresent
+  imagePullSerial: true
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: "{{ .Values.kubeadmConfig.k8sVersion }}"
+apiServer:
+  certSANs:
+    - "{{ .Values.kubeadmConfig.apiFQDN }}"
+clusterName: kubernetes
+controlPlaneEndpoint: {{ .Values.kubeadmConfig.apiFQDN }}:6443
+controllerManager:
+  extraArgs:
+  - name: allocate-node-cidrs
+    value: "false"
+networking:
+  podSubnet: {{ .Values.kubeadmConfig.podSubnet }}
+  serviceSubnet: {{ .Values.kubeadmConfig.serviceSubnet }}
+proxy:
+  disabled: true

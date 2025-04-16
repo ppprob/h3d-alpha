@@ -1,0 +1,25 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: cluster
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: {{ .Values.fluxVariables.repositoryBranch }}
+  secretRef:
+    name: git-cred
+  url: {{ .Values.fluxVariables.repositoryUrl }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-cred
+  namespace: flux-system
+type: Opaque
+data:
+  identity: ${repository__sshIdentity_b64} 
+stringData:
+  known_hosts: ${repository__sshKnownHosts}
+
