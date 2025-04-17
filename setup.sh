@@ -8,7 +8,7 @@ source package-system-index
 init_git () {
     rm -rf .git
     echo "+ Initialize git structure"
-    for repo in `find structure -maxdepth 5 -type f -exec dirname {} \; | sort | uniq`;
+    for repo in `find structure -name .gitignore -type f -exec dirname {} \; | sort | uniq`;
     do
         repo=${repo#*/}
         git init -q --bare -b master $DIR_GIT/$repo
