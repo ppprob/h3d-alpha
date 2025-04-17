@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-git
+  namespace: tekton-runs
+spec:
+  params:
+    - name: repository
+      type: string
+  steps:
+    - name: get-git
+      image: alpine/git
+      script: |
+        cd /workspace
+        mkdir ~/.ssh
+        echo "$GITKEY" > ~/.ssh/id_rsa
+        echo "$GITHOST" > ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/id_rsa
+        git clone $(params.repository)
+      env:
+        - name: GITKEY
+          valueFrom:
+            secretKeyRef:
+              key: identity
+              name: git-cred
+        - name: GITHOST
+          valueFrom:
+            secretKeyRef:
+              key: known_hosts
+              name: git-cred
+  workspaces:
+    - name: workspace
+      mountPath: /workspace

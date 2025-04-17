@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# The "post-receive" script is run after receive-pack has accepted a pack
+# and the repository has been updated.  It is passed arguments in through
+# stdin in the form
+#  <oldrev> <newrev> <refname>
+# For example:
+#  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
+
+read OLDREV NEWREV REFNAME
+
+# Set variables
+PWD=`pwd`
+NAME=${PWD##*/}
+REPOSITORY=${USER}@${HOSTNAME}:${PWD}
+REGISTRY=registry.h3d.local
+SHORTREV=${NEWREV:0:7}
+
+# Source automation 
+mkdir head && git archive --format=tar HEAD | tar -x -C head/
+if [[ -f head/.post-receive ]]; then
+    echo "- running local post-receive"
+    echo $OLDREV $NEWREV $REFNAME | head/.post-receive $OLDREV $NEWREV $REFNAME
+    rm -rf head
+    exit $?
+else 
+    declare -A PIPELINE
+    [[ -e head/Dockerfile ]] && PIPELINE[BUILD_IMAGE]=1
+    [[ -e head/chart/Chart.yaml ]] && PIPELINE[PUSH_CHART]=1
+    rm -rf head
+fi
+
+# Build pipeline
+if [[ -n ${PIPELINE[@]} ]]; then
+    echo "- running post-receive pipeline:"
+    cat << EOF | kubectl apply -f -
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: $NAME-$SHORTREV
+  namespace: tekton-runs
+spec:
+  params:
+    - name: repository
+      value: "$REPOSITORY"
+    - name: registry
+      value: "$REGISTRY"
+  pipelineSpec:
+    tasks:
+      - name: get-git
+        taskRef:
+          name: get-git
+        params:
+          - name: repository
+            value: \$(params.repository)
+        workspaces:
+          - name: workspace
+$([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "
+      - name: push-chart
+        taskRef:
+          name: push-chart
+        runAfter:
+          - get-git
+        params:
+          - name: repository
+            value: \$(params.repository)
+          - name: registry
+            value: \$(params.registry)
+        workspaces:
+          - name: workspace"
+)
+  workspaces:
+    - name: workspace
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+---
+EOF
+    echo "+ access pipeline:"
+    echo "https://pipelines.h3d.local/#/namespaces/tekton-runs/pipelineruns/$NAME-$SHORTREV"
+fi

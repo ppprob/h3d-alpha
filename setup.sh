@@ -6,6 +6,8 @@ DIR_REGISTRY=/var/lib/registry
 source package-system-index
 
 init_git () {
+    rm -rf .git
+    echo "+ Initialize git structure"
     for repo in `find structure -maxdepth 5 -type f -exec dirname {} \; | sort | uniq`;
     do
         repo=${repo#*/}
@@ -20,7 +22,9 @@ init_git () {
     done
 }
 
-# tar reg.tgz
+extract_registry () {
+    tar -C $DIR_REGISTRY -xz
+}
 
 pull_binaries () {
     for bin in ${!SYSBIN[@]}
@@ -34,11 +38,13 @@ pull_binaries () {
 # package-user-index, currently helm in bin/system
 
 template_local () {
+    echo "+ Copy cluster template chart to cluster/local"
     cp -r structure/common/internal/cluster-k8s-base/chart/* structure/cluster/local/
     sed -i "s#<pathtogit>#$DIR_GIT#" structure/cluster/local/templates/bootstrap/run-init.sh
     sed -i "s#k8sVersion:#k8sVersion: ${SYSBIN[kubernetes]}#" structure/cluster/local/values.yaml
 }
 
 init_git
+extract_registry
 pull_binaries
 template_local

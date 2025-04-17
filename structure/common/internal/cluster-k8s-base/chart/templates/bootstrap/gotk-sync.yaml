@@ -10,7 +10,7 @@ spec:
     branch: {{ .Values.fluxVariables.repositoryBranch }}
   secretRef:
     name: git-cred
-  url: {{ .Values.fluxVariables.repositoryUrl }}
+  url: {{ .Values.fluxVariables.repositoryBaseUrl }}
 ---
 apiVersion: v1
 kind: Secret
@@ -19,7 +19,7 @@ metadata:
   namespace: flux-system
 type: Opaque
 data:
-  identity: ${repository__sshIdentity_b64} 
+  identity: {{ .Values.fluxVariables.repositorySshIdentityB64 }}
 stringData:
-  known_hosts: ${repository__sshKnownHosts}
+  known_hosts: {{ .Values.fluxVariables.repositorySshKnownHosts }}
 

@@ -1,0 +1,9 @@
+apiVersion: operator.tekton.dev/v1alpha1
+kind: TektonDashboard
+metadata:
+  name: dashboard
+spec:
+  options:
+    disabled: false
+  readonly: false
+  targetNamespace: tekton-pipelines

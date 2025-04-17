@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: push-chart
+  namespace: tekton-runs
+spec:
+  params:
+    - name: repository
+      type: string
+    - name: registry
+      type: string
+  steps:
+    - name: push-chart
+      image: alpine/helm
+      script: |
+        REPOSITORY=$(params.repository)
+        REGISTRY=$(params.registry)
+        NAME=${REPOSITORY##*/}
+        REG_PATH=${REPOSITORY#*git/}
+        echo "$CLUSTERCACERT" >> /etc/ssl/certs/ca-certificates.crt
+        cd /workspace
+        helm package $NAME/chart
+        helm registry login --username="$REGUSER" --password="$REGPASS" $REGISTRY
+        helm push $NAME-* oci://$REGISTRY/chart/${REG_PATH%/*}
+      env:
+        - name: CLUSTERCACERT
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: registry-local-ca
+        - name: REGUSER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: registry-local-cred
+        - name: REGPASS
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: registry-local-cred
+  workspaces:
+    - name: workspace
+      mountPath: /workspace

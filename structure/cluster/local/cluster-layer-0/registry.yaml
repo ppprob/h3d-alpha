@@ -15,6 +15,7 @@ metadata:
   labels:
     app.kubernetes.io/name: registry
   name: registry
+  namespace: flux-system
 spec:
   selector:
     matchLabels:

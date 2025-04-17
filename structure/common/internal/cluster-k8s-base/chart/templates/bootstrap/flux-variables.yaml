@@ -4,7 +4,7 @@ metadata:
   name: flux-variables
   namespace: flux-system
 stringData:
-  repository__url: {{ .Values.fluxVariables.repositoryUrl }}
+  repository__baseUrl: {{ .Values.fluxVariables.repositoryBaseUrl }}
   repository__branch: {{ .Values.fluxVariables.repositoryBranch }}
   repository__sshIdentity_b64: {{ .Values.fluxVariables.repositorySshIdentityB64 }}
   repository__sshKnownHosts: {{ .Values.fluxVariables.repositorySshKnownHosts }}

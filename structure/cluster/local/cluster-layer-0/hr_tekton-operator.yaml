@@ -6,8 +6,8 @@ metadata:
   labels:
     cluster-layer: "0"
 spec:
-  releaseName: 
-  targetNamespace: storage-system
+  releaseName: tekton-operator
+  targetNamespace: tekton-operator
   interval: 5m
   chart:
     spec:

@@ -1,0 +1,8 @@
+kubeProxyReplacement: true
+k8sServiceHost: 
+k8sServicePort: 
+
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: []
+    clusterPoolIPv4MaskSize: 

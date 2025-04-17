@@ -1,0 +1,8 @@
+#!/bin/bash
+# crontab: * * * * * /var/home/git/automation/hook/link-repositories.sh
+
+echo "+ extracting files to live"
+
+git --git-dir=. --work-tree=. checkout master -- link-repositories.sh
+git --git-dir=. --work-tree=live checkout master -- post-receive
+

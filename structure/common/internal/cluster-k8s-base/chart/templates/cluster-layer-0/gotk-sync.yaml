@@ -2,7 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: cluster
+  name: cluster-local
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -10,7 +10,7 @@ spec:
     branch: ${repository__branch}
   secretRef:
     name: git-cred
-  url: ${repository__url}
+  url: ${repository__baseUrl}/cluster/local
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -26,7 +26,7 @@ spec:
       cluster-layer: "0"
   sourceRef:
     kind: GitRepository
-    name: cluster
+    name: cluster-local
   postBuild:
     substituteFrom:
       - kind: Secret
