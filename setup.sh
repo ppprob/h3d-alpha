@@ -3,7 +3,7 @@
 DIR_GIT=/var/lib/git
 DIR_REGISTRY=/var/lib/registry
 
-source package-system-index
+source index/package-system
 
 init_git () {
     rm -rf .git
@@ -23,7 +23,9 @@ init_git () {
 }
 
 extract_registry () {
-    tar -C $DIR_REGISTRY -xz
+    echo "+ Extract registry content" 
+    mkdir $DIR_REGISTRY
+    tar -C $DIR_REGISTRY -xzf registry.tgz
 }
 
 pull_binaries () {

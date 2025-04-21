@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: push-chart
+  name: build-image
   namespace: tekton-runs
 spec:
   params:

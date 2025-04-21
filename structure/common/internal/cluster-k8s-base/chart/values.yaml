@@ -1,5 +1,5 @@
 fluxVariables:
-  repositoryUrl: 
+  repositoryBaseUrl: 
   repositoryBranch: 
   repositorySshIdentityB64: 
   repositorySshKnownHosts: 
