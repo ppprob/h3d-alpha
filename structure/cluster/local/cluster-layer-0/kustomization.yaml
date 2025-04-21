@@ -6,4 +6,5 @@ resources:
   - namespaces.yaml
   - registry.yaml
   - hr_tekton-operator.yaml
-  - kustomize-cluster-layer-1.yaml
+  - ks_automation-tasks.yaml
+  - ks_cluster-layer-1.yaml
