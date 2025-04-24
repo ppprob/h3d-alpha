@@ -25,6 +25,7 @@ init_k8s () {
     mkdir -p /root/.kube
     cp /etc/kubernetes/super-admin.conf /root/.kube/config
     # Install network add-on
+    # helm install cilium https://helm.cilium.io/cilium-1.17.2.tgz -f cilium.yaml -n network-system --create-namespace
 }
 
 init_flux () {

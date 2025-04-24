@@ -19,7 +19,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: cluster-layer-0
+    - name: cluster-layer-1
   interval: 10m0s
   path: ./
   prune: true

@@ -9,9 +9,6 @@ spec:
   interval: 10m0s
   path: ./cluster-layer-2
   prune: true
-  commonMetadata:
-    labels:
-      cluster-layer: "2"
   sourceRef:
     kind: GitRepository
     name: cluster-local
