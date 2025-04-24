@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: flux-system
+  labels:
+    cluster-layer: "1"
+spec:
+  releaseName: cert-manager
+  targetNamespace: pki-system
+  interval: 24h
+  chart:
+    spec:
+      chart: chart/common/external/cert-manager
+      version: "v1.17.1"
+      interval: 9999h0m
+      sourceRef:
+        kind: HelmRepository
+        name: registry-local
+        namespace: flux-system
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+  values:
+    global:
+      leaderElection:
+        namespace: "pki-system"
+    crds:
+      enabled: true
+      keep: true

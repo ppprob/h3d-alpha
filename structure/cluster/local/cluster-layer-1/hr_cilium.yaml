@@ -7,12 +7,12 @@ metadata:
     cluster-layer: "1"
 spec:
   releaseName: cilium
-  targetNamespace: kube-system
+  targetNamespace: network-system
   interval: 24h
   chart:
     spec:
       chart: chart/common/external/cilium
-      version: "0.75.0"
+      version: "1.17.3"
       interval: 9999h0m
       sourceRef:
         kind: HelmRepository

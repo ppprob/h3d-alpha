@@ -11,37 +11,36 @@ spec:
       type: string
   steps:
     - name: build-img
-      image: gcr.io/kaniko-project/executor:v1.21.0
-      args:
-        - --context
-        - /workspace
-        - --dockerfile
-        - Dockerfile
-        - --skip-tls-verify
-        - --insecure-registry
-        - trow.melon.local
-        - --destination
-        - trow.melon.local/melonflix2:2.0.1
+      image: moby/buildkit:v0.21.0-rootless
+      securityContext:
+        seccompProfile:
+          type: Unconfined
+        appArmorProfile:
+          type: Unconfined
+        runAsUser: 1000
+        runAsGroup: 1000
+      script: |
+        cd /workspace
+        for DOCKERFILE in `find . -type f -name Dockerfile`
+        do
+            echo " + Dockerfile found: $DOCKERFILE"
+            CONTEXT=$(dirname $DOCKERFILE)
+            NAME="$(awk '$1 ~ /#--name/ {print $2}' $DOCKERFILE)"
+            TAG=latest
+            IMGNAME=$REGISTRY/$NAME:$TAG
+            buildctl-daemonless.sh build \
+              --frontend dockerfile.v0 \
+              --local context=$CONTEXT \
+              --local dockerfile=$CONTEXT \
+              --output type=image,oci-mediatypes=true,name=$IMGNAME,push=true,registry.insecure=true
+        done
       env:
         - name: REPOSITORY
           value: $(params.repository)
         - name: REGISTRY
           value: $(params.registry)
-        - name: CLUSTERCACERT
-          valueFrom:
-            secretKeyRef:
-              key: ca.crt
-              name: registry-local-ca
-        - name: REGUSER
-          valueFrom:
-            secretKeyRef:
-              key: username
-              name: registry-local-cred
-        - name: REGPASS
-          valueFrom:
-            secretKeyRef:
-              key: password
-              name: registry-local-cred
+        - name: BUILDKITD_FLAGS
+          value: --oci-worker-no-process-sandbox
   workspaces:
     - name: workspace
       mountPath: /workspace

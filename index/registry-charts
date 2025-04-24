@@ -2,3 +2,4 @@ declare -A REGCHART
 SYSBIN["cilium"]="1.17.3"
 SYSBIN["topolvm"]="15.5.4"
 SYSBIN["tekton-operator"]="0.75.0"
+SYSBIN["cert-manager"]="v1.17.1"

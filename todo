@@ -2,5 +2,3 @@ install:
 - smooth network add-on integration
 - some kind of package management
 
-profiling
-
