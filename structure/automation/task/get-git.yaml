@@ -11,7 +11,7 @@ spec:
       type: string
   steps:
     - name: get-git
-      image: alpine/git
+      image: alpine/git:2.47.2
       script: |
         cd /workspace
         git init -b workspace

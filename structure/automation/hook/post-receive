@@ -1,68 +1,69 @@
 #!/bin/bash
-
-this should be a configmap
-git ls-tree for file check in pipeline build
-git cat-file commit for commit msg  
-move repositoy and registry values away
-
-
-# The "post-receive" script is run after receive-pack has accepted a pack
-# and the repository has been updated.  It is passed arguments in through
 # stdin in the form
 #  <oldrev> <newrev> <refname>
 # For example:
 #  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
 
+#this should be a configmap
+#git cat-file commit for commit msg  
+#move repositoy and registry values away
+
 read OLDREV NEWREV REFNAME
 
-# Set variables
-PWD=`pwd`
-NAME=${PWD##*/}
-REPOSITORY=${USER}@${HOSTNAME}:${PWD}
-REGISTRY=registry.h3d.local
-SHORTREV=${NEWREV:0:7}
+## Source automation 
+#mkdir head && git archive --format=tar HEAD | tar -x -C head/
+#if [[ -f head/.post-receive ]]; then
+#    echo "- running local post-receive"
+#    echo $OLDREV $NEWREV $REFNAME | head/.post-receive $OLDREV $NEWREV $REFNAME
+#    rm -rf head
+#    exit $?
+#fi
 
-# Source automation 
-mkdir head && git archive --format=tar HEAD | tar -x -C head/
-if [[ -f head/.post-receive ]]; then
-    echo "- running local post-receive"
-    echo $OLDREV $NEWREV $REFNAME | head/.post-receive $OLDREV $NEWREV $REFNAME
-    rm -rf head
-    exit $?
-else 
-    declare -A PIPELINE
-    [[ -e head/Dockerfile ]] && PIPELINE[BUILD_IMAGE]=1
-    [[ -e head/chart/Chart.yaml ]] && PIPELINE[PUSH_CHART]=1
-    rm -rf head
+# Set variables
+REPOSITORY=$PWD
+REGISTRY="registry.source-system"
+NAME=${REPOSITORY##*/}
+SHORTREV=${NEWREV:0:7}
+TREE=$(git ls-tree -r --name-only $NEWREV)
+
+# Check if tag
+if [[ -n `grep tags <<< $REFNAME` ]]
+then
+    REVISION=${REFNAME##*/}
+    SHORTREV=$REVISION
+else
+    REVISION=$NEWREV
 fi
 
-# Build pipeline
-if [[ -n ${PIPELINE[@]} ]]; then
-    echo "- running post-receive pipeline:"
-    cat << EOF | kubectl apply -f -
----
-apiVersion: tekton.dev/v1
-kind: PipelineRun
-metadata:
-  name: $NAME-$SHORTREV
-  namespace: tekton-runs
-spec:
-  params:
-    - name: repository
-      value: "$REPOSITORY"
-    - name: registry
-      value: "$REGISTRY"
-  pipelineSpec:
-    tasks:
-      - name: get-git
+# Search for task triggers and create task block on hit
+declare -A PIPELINE
+
+if [[ -n `grep '/Dockerfile$' <<< $TREE` ]]
+then
+    PIPELINE[BUILD_IMAGE]=1
+    TASK_BUILD_IMAGE=$(cat << EOF
+      - name: build-image
         taskRef:
-          name: get-git
+          name: build-image
+        runAfter:
+          - get-git
         params:
           - name: repository
             value: \$(params.repository)
+          - name: revision
+            value: $SHORTREV
+          - name: registry
+            value: \$(params.registry)
         workspaces:
           - name: workspace
-$([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "
+EOF
+)
+fi
+
+if [[ -n `grep '/Chart.yaml$' <<< $TREE` ]]
+then
+    PIPELINE[PUSH_CHART]=1
+    TASK_PUSH_CHART=$(cat << EOF
       - name: push-chart
         taskRef:
           name: push-chart
@@ -74,13 +75,47 @@ $([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "
           - name: registry
             value: \$(params.registry)
         workspaces:
-          - name: workspace"
+          - name: workspace
+EOF
 )
+fi
+
+
+if [[ -n ${PIPELINE[@]} ]]; then
+    echo "+ running post-receive pipeline:"
+    cat << EOF | kubectl apply -f -
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: $NAME-$SHORTREV
+  namespace: tekton-runs
+spec:
+  params:
+    - name: repository
+      value: "$REPOSITORY"
+    - name: revision
+      value: "$REVISION"
+    - name: registry
+      value: "$REGISTRY"
+  pipelineSpec:
+    tasks:
+      - name: get-git
+        taskRef:
+          name: get-git
+        params:
+          - name: repository
+            value: \$(params.repository)
+          - name: revision
+            value: \$(params.revision)
+        workspaces:
+          - name: workspace
+$([[ -n ${PIPELINE[BUILD_IMAGE]} ]] && echo "$TASK_BUILD_IMAGE")
+$([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "$TASK_PUSH_CHART")
   workspaces:
     - name: workspace
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
           accessModes:
             - ReadWriteOnce
           resources:
@@ -88,6 +123,4 @@ $([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "
               storage: 1Gi
 ---
 EOF
-    echo "+ access pipeline:"
-    echo "https://pipelines.h3d.local/#/namespaces/tekton-runs/pipelineruns/$NAME-$SHORTREV"
 fi
