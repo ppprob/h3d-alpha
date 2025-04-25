@@ -1,4 +1,5 @@
 install:
 - smooth network add-on integration
 - some kind of package management
+- split k8s install and setup
 

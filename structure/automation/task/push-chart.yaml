@@ -11,16 +11,21 @@ spec:
       type: string
   steps:
     - name: push-chart
-      image: alpine/helm:3.17.3
+      image: alpine/helm:3.17.2
       script: |
         cd /workspace
-        REG_PATH=${REPOSITORY#*git/}
-
-        CHART=$(dirname `find . -type f -name Chart.yaml -exec dirname {} \;`)
-        echo " + Helm Chart found: $CHART"
+        REPO_PATH=${REPOSITORY#*git/}
+        REPO_NAME=${REPO_PATH##*/}
+        CHART=$(find . -type f -name Chart.yaml -exec dirname {} \;)
+        CHART_NAME="$(awk '$1 ~ /name:/ {print $2}' $CHART/Chart.yaml)"
+        echo " + Helm Chart '$CHART_NAME' found: $CHART"
         helm package $CHART
-
-        helm push $NAME-* oci://$REGISTRY/chart/${REG_PATH%/*}
+        if [[ $REPO_NAME == $CHART_NAME ]]
+        then
+            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH%/*} --plain-http
+        else
+            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH}/${CHART_NAME} --plain-http
+        fi
       env:
         - name: REPOSITORY
           value: $(params.repository)
@@ -29,4 +34,3 @@ spec:
   workspaces:
     - name: workspace
       mountPath: /workspace
-
