@@ -5,7 +5,6 @@
 #  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
 
 #this should be a configmap
-#git cat-file commit for commit msg  
 #move repositoy and registry values away
 
 read OLDREV NEWREV REFNAME
@@ -25,6 +24,7 @@ REGISTRY="registry.source-system"
 NAME=${REPOSITORY##*/}
 SHORTREV=${NEWREV:0:7}
 TREE=$(git ls-tree -r --name-only $NEWREV)
+PRFLAGS=$(git cat-file commit $NEWREV | sed -n '/^$/ {n; :a; p; n; ba}' | grep -E -o '\--pr[^ ]+')
 
 # Check if tag
 if [[ -n `grep tags <<< $REFNAME` ]]
@@ -37,7 +37,7 @@ fi
 
 # Search for task triggers and create task block on hit
 declare -A PIPELINE
-
+#  repository content
 if [[ -n `grep '/Dockerfile$' <<< $TREE` ]]
 then
     PIPELINE[BUILD_IMAGE]=1
@@ -60,7 +60,8 @@ EOF
 )
 fi
 
-if [[ -n `grep '/Chart.yaml$' <<< $TREE` ]]
+if [[ -n `grep '/Chart.yaml$' <<< $TREE` ]] \
+   && [[ -n `git diff $NEWREV $OLDREV | grep '^diff.*Chart.yaml.*Chart.yaml'` ]]
 then
     PIPELINE[PUSH_CHART]=1
     TASK_PUSH_CHART=$(cat << EOF
@@ -74,6 +75,27 @@ then
             value: \$(params.repository)
           - name: registry
             value: \$(params.registry)
+        workspaces:
+          - name: workspace
+EOF
+)
+fi
+# commit message flags
+if [[ -n `grep 'prUpgradeIn' <<< $PRFLAGS` ]]
+then
+    PIPELINE[UPGRADE_CHART]=1
+    eval "`grep -Eo 'prUpgradeIn[^ ]+' <<< $PRFLAGS`"
+    TASK_UPGRADE_CHART=$(cat << EOF
+      - name: upgrade-chart
+        taskRef:
+          name: upgrade-chart
+        runAfter:
+          - build-image
+        params:
+          - name: target
+            value: $prUpgradeIn
+          - name: revision
+            value: $SHORTREV
         workspaces:
           - name: workspace
 EOF
@@ -112,6 +134,7 @@ spec:
           - name: workspace
 $([[ -n ${PIPELINE[BUILD_IMAGE]} ]] && echo "$TASK_BUILD_IMAGE")
 $([[ -n ${PIPELINE[PUSH_CHART]} ]] && echo "$TASK_PUSH_CHART")
+$([[ -n ${PIPELINE[UPGRADE_CHART]} ]] && echo "$TASK_UPGRADE_CHART")
   workspaces:
     - name: workspace
       volumeClaimTemplate:

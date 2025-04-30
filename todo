@@ -3,3 +3,5 @@ install:
 - some kind of package management
 - split k8s install and setup
 
+tekton:
+- svcacc rbac
