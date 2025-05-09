@@ -17,7 +17,7 @@ openssl genrsa -aes256 -passout pass:password -out pki/registry.key.passwd 4096
 openssl rsa -in pki/registry.key.passwd -passin pass:password -out pki/registry.key
 rm -f pki/registry.key.passwd
 
-openssl req -x509 -CAkey pki/cluster-ca.key -CA pki/cluster-ca.crt -sha256 -days 365 -out pki/registry.crt -subj "$REGSUBJ" -passout pass: -addext "$REGALTNAME" \
+openssl req -x509 -CAkey pki/cluster-ca.key -CA pki/cluster-ca.crt -sha256 -days 365 -key pki/registry.key -out pki/registry.crt -subj "$REGSUBJ" -passout pass: -addext "$REGALTNAME" \
                    -addext "basicConstraints = critical,CA:FALSE" \
                    -addext "keyUsage = critical, digitalSignature, keyEncipherment" \
                    -addext "extendedKeyUsage = clientAuth, serverAuth"
