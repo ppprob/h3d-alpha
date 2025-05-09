@@ -8,6 +8,8 @@ stringData:
   repository__branch: {{ .Values.fluxVariables.repositoryBranch }}
   repository__sshIdentity_b64: {{ .Values.fluxVariables.repositorySshIdentityB64 }}
   repository__sshKnownHosts: {{ .Values.fluxVariables.repositorySshKnownHosts }}
+  clusterCA__cert_b64: {{ .Values.fluxVariables.clusterCACert }}
+  clusterCA__key_b64: {{ .Values.fluxVariables.clusterCAkey }}
 {{- if .Values.additionalFluxVariables }}
   {{- .Values.additionalFluxVariables | nindent 2 }}
 {{- end }}

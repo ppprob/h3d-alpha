@@ -3,6 +3,8 @@ fluxVariables:
   repositoryBranch: 
   repositorySshIdentityB64: 
   repositorySshKnownHosts: 
+  clusterCAcert:
+  clusterCAkey:
 
 #additionalFluxVariables: |-
 #  key: value

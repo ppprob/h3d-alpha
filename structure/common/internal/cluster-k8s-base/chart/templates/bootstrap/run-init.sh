@@ -38,6 +38,8 @@ init_flux () {
 
     # touch gitignore && commit push
 
+    # create tmp-registry secret if exists
+
     kubectl create -f ../cluster-layer-0/gotk-components.yaml
     kubectl create -f flux-variables.yaml
     kubectl create -f gotk-sync.yaml

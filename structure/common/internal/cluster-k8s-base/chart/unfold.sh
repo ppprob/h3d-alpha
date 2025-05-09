@@ -32,5 +32,6 @@ EOF
 sed '/stringData/,$ s/:.*/:/' bootstrap/flux-variables.yaml > bootstrap/flux-variables.yaml.tmpl
 
 chmod +x bootstrap/run-init.sh
+chmod +x bootstrap/create-ca.sh
 
 rm -rf Chart.yaml templates values.yaml unfold.sh
