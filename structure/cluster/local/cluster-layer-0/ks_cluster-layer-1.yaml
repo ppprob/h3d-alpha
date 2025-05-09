@@ -9,6 +9,7 @@ spec:
   interval: 10m0s
   path: ./cluster-layer-1
   prune: true
+  wait: true
   sourceRef:
     kind: GitRepository
     name: cluster-local

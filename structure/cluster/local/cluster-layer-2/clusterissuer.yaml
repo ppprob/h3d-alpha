@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-ca
+  namespace: pki-system
+type: kubernetes.io/tls
+data:
+  tls.crt: ${clusterCA__cert_b64}
+  tls.key: ${clusterCA__key_b64}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cluster-ca
+  namespace: pki-system
+spec:
+  ca:
+    secretName: cluster-ca

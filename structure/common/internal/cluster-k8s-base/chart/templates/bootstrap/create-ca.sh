@@ -23,7 +23,9 @@ openssl req -x509 -CAkey pki/cluster-ca.key -CA pki/cluster-ca.crt -sha256 -days
                    -addext "extendedKeyUsage = clientAuth, serverAuth"
 
 echo "+ Insert CA values to flux-variables.yaml"
-sed -i "s/clusterCA__cert_b64: /clusterCA_cert_b64: `base64 -w0 pki/cluster-ca.crt`/" flux-variables.yaml
-sed -i "s/clusterCA__key_b64: /clusterCA_key_b64: `base64 -w0 pki/cluster-ca.key`/" flux-variables.yaml
+sed -i "s/clusterCA__cert_b64: /clusterCA__cert_b64: `base64 -w0 pki/cluster-ca.crt`/" flux-variables.yaml
+sed -i "s/clusterCA__key_b64: /clusterCA__key_b64: `base64 -w0 pki/cluster-ca.key`/" flux-variables.yaml
+
+echo "IMPORT CA FOR THE HOST!"
 
 echo "*.key" > pki/.gitignore

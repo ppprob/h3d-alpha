@@ -18,6 +18,8 @@ spec:
         kind: HelmRepository
         name: registry-local
         namespace: flux-system
+  dependsOn:
+    - name: cert-manager
   upgrade:
     remediation:
       remediateLastFailure: true
