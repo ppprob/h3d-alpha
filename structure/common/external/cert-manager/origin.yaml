@@ -1,0 +1,5 @@
+git: 
+  remote: https://github.com/cert-manager/cert-manager
+chart:
+  name: cert-manager
+  repoUrl: https://charts.jetstack.io

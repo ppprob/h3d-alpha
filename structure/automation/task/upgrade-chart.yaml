@@ -20,7 +20,7 @@ spec:
         NS=${TARGET%/*}
         RELEASE=${TARGET#*/}
         echo " + Upgrading '$RELEASE' in '$NS'"
-        helm upgrade $RELEASE $CHART -n $NS --reuse-values --set image.tag=$IMGTAG
+        helm upgrade $RELEASE $CHART -n $NS --reset-then-reuse-values --set image.tag=$IMGTAG
       env:
         - name: TARGET
           value: $(params.target)

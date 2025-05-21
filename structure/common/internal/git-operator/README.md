@@ -1,7 +1,5 @@
 gitweb:
-    - ro /var/lib/git
     - ingress
-
 hooker:
     - rw, /var/lib/git
     - cp hooks on change

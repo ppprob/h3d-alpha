@@ -1,0 +1,5 @@
+git: 
+  remote: https://github.com/cilium/cilium
+chart:
+  name: cilium
+  repoUrl: https://helm.cilium.io/

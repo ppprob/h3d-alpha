@@ -26,22 +26,24 @@ spec:
       script: |
         cd /workspace
         REPO_PATH=${REPOSITORY#*git/}
-        for DOCKERFILE in `find . -type f -name Dockerfile`
+        for DOCKERFILE in `find . -type f -name './Dockerfile*'`
         do
             echo " + Dockerfile found: $DOCKERFILE"
             CONTEXT=$(dirname $DOCKERFILE)
             NAME="$(awk '$1 ~ /#--name/ {print $2}' $DOCKERFILE)"
             if [[ -z $NAME ]]
             then
-                IMGNAME=$REGISTRY/$REPO_PATH:$IMGTAG
+                IMGNAME=$REGISTRY/$REPO_PATH
             else
-                IMGNAME=$REGISTRY/$REPO_PATH-$NAME:$IMGTAG
+                IMGNAME=$REGISTRY/$REPO_PATH-$NAME
             fi
             buildctl-daemonless.sh build \
               --frontend dockerfile.v0 \
               --local context=$CONTEXT \
               --local dockerfile=$CONTEXT \
-              --output type=image,oci-mediatypes=true,name=$IMGNAME,push=true,registry.insecure=true
+              --output type=image,oci-mediatypes=true,\"name=$IMGNAME:$IMGTAG,$IMGNAME:latest\",push=true,registry.insecure=true \
+              #--export-cache type=inline \
+              #--import-cache type=registry,ref=$IMGNAME
         done
       env:
         - name: REPOSITORY

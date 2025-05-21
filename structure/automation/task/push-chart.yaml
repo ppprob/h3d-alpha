@@ -16,15 +16,16 @@ spec:
         cd /workspace
         REPO_PATH=${REPOSITORY#*git/}
         REPO_NAME=${REPO_PATH##*/}
-        CHART=$(find . -type f -name Chart.yaml -exec dirname {} \;)
+        #CHART=$(find . -type f -name Chart.yaml -exec dirname {} \;)
+        CHART=chart
         CHART_NAME="$(awk '$1 ~ /name:/ {print $2}' $CHART/Chart.yaml)"
         echo " + Helm Chart '$CHART_NAME' found: $CHART"
         helm package $CHART
         if [[ $REPO_NAME == $CHART_NAME ]]
         then
-            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH%/*} --plain-http
+            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH%/*} --insecure-skip-tls-verify
         else
-            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH}/${CHART_NAME} --plain-http
+            helm push $CHART_NAME-* oci://$REGISTRY/chart/${REPO_PATH}/${CHART_NAME} --insecure-skip-tls-verify
         fi
       env:
         - name: REPOSITORY

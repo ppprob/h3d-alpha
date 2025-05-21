@@ -1,15 +1,16 @@
-#!/bin/bash
-# DEP: git,yq,jq,helm
+#!/usr/bin/env bash
+# DEP: git,yq,jq,helm,rsync
 #set -x
 
-REMOTE=$1
+REPO=$1
 
 function setRepoParams {
 
     # read origin file, exit if not found
-    originyaml=`git archive --remote $REMOTE HEAD origin.yaml | tar -xO` || exit
+    
+    originyaml=`git archive --remote $REPO HEAD origin.yaml 2>/dev/null | tar -xO 2>/dev/null` || echo "no origin" && exit
 
-    LOCAL_TAG=`git ls-remote --refs --tags $REMOTE | awk -F'/' '{print $3}' | sort -V | tail -n1`
+    LOCAL_TAG=`git ls-remote --refs --tags $REPO | awk -F'/' '{print $3}' | sort -V | tail -n1`
 
     CHART_NAME=`yq -r '.chart.name' <<< $originyaml`
     if [[ $CHART_NAME != null ]]
@@ -22,7 +23,8 @@ function setRepoParams {
                 CHART_SOURCE=$CHART_REPOURL
                 ;;
             false)
-                helm repo add `cut -d'/' -f3 <<< $CHART_REPOURL` $CHART_REPOURL
+                CHART_REPO=`cut -d'/' -f3 <<< $CHART_REPOURL`
+                helm repo add $CHART_REPO $CHART_REPOURL
                 helm repo update
                 CHART_SOURCE="$CHART_REPO/$CHART_NAME" 
                 ;;
@@ -98,9 +100,9 @@ function getNewAppVersion {
 # --- Run
 setRepoParams
 checkRemoteVersions
-if [[ $version != $LOCAL_TAG ]] 
+if [[ $version != $LOCAL_TAG ]] && [[ -z `git ls-remote $REPO | grep new-version-$version` ]]
 then
-    git clone $REMOTE ./workdir && cd ./workdir
+    git clone $REPO ./workdir && cd ./workdir
     branch=new-version-$version
     git checkout -b $branch
     getNewVersion
@@ -118,19 +120,16 @@ then
 #                    \"alertname\": \"NewVersionToImport\",
 #                    \"severity\": \"info\",
 #                    \"instance\": \"git\",
-#                    \"repository\": \"$REMOTE\",
+#                    \"repository\": \"$REPO\",
 #                    \"branch\": \"$branch\"
 #                },
 #                \"annotations\": {
-#                    \"repository\": \"$REMOTE\",
+#                    \"repository\": \"$REPO\",
 #                    \"branch\": \"$branch\"
 #                }
 #              }
 #            ]"
 
-
+else
+    echo "+ no upgrade for '$REPO'"
 fi
-
-
-
-

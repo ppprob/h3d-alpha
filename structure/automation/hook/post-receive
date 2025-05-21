@@ -38,7 +38,7 @@ fi
 # Search for task triggers and create task block on hit
 declare -A PIPELINE
 #  repository content
-if [[ -n `grep '/Dockerfile$' <<< $TREE` ]]
+if [[ -n `grep '^Dockerfile' <<< $TREE` ]]
 then
     PIPELINE[BUILD_IMAGE]=1
     TASK_BUILD_IMAGE=$(cat << EOF
@@ -60,7 +60,7 @@ EOF
 )
 fi
 
-if [[ -n `grep '/Chart.yaml$' <<< $TREE` ]] \
+if [[ -n `grep -E '^chart/(^charts)*Chart.yaml$' <<< $TREE` ]] \
    && [[ -n `git diff $NEWREV $OLDREV | grep '^diff.*Chart.yaml.*Chart.yaml'` ]]
 then
     PIPELINE[PUSH_CHART]=1
@@ -105,7 +105,7 @@ fi
 
 if [[ -n ${PIPELINE[@]} ]]; then
     echo "+ running post-receive pipeline:"
-    cat << EOF | kubectl create -f -
+    cat << EOF | kubectl apply -f -
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun

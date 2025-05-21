@@ -1,0 +1,5 @@
+[user]
+        email = git-operator@cluster.local
+        name = git-operator
+[advice]
+        detachedHead = false
